@@ -7,6 +7,7 @@ defmodule BotConsumer do
 
   def start_link do
     :ets.new(:channels, [:named_table, :public])
+    :ets.new(:users, [:named_table, :public])
     Consumer.start_link(__MODULE__)
   end
 
@@ -53,11 +54,22 @@ defmodule BotConsumer do
   end
 
   def handle_event({:MESSAGE_CREATE, msg, _ws_state}) do
-    IO.inspect(msg)
     if !msg.author.bot && (msg.embeds != [] || msg.attachments != []) do
       case :ets.lookup(:channels, msg.channel_id) do
         [{_, true}] ->
-          {:ok, thread} = Api.start_thread_with_message(msg.channel_id, msg.id, %{name: "Discussion"})
+          start_time = ~N[2022-12-21 05:00:00.000000Z]
+          current_time = NaiveDateTime.utc_now()
+          diff = NaiveDateTime.diff(current_time, start_time) 
+                 |> IO.inspect()
+                 |> NaiveDateTime.from_gregorian_seconds
+                 |> IO.inspect()
+
+          name = case msg.member.nick do
+            nil -> msg.author.username
+            nick -> nick
+          end
+          thread_name = "#{name} - Day #{diff.day}"
+          {:ok, thread} = Api.start_thread_with_message(msg.channel_id, msg.id, %{name: thread_name})
           Api.create_message(thread.id, "Congrats on sharing your progress!")
 
         _ -> 
