@@ -57,7 +57,7 @@ defmodule BotConsumer do
     if !msg.author.bot && (msg.embeds != [] || msg.attachments != []) do
       case :ets.lookup(:channels, msg.channel_id) do
         [{_, true}] ->
-          start_time = ~N[2022-12-21 05:00:00.000000Z]
+          start_time = ~N[2022-12-21 11:00:00.000000Z]
           current_time = NaiveDateTime.utc_now()
           diff = NaiveDateTime.diff(current_time, start_time) 
                  |> IO.inspect()
