@@ -18,7 +18,7 @@ defmodule Hacker do
   def manually_add_commits(id, commits) do
     hacker = find_by_member(id)
     updated_hacker = %{hacker | commits: Map.merge(hacker.commits, commits)}
-    :ets.insert(:users, {id, updated_hacker})
+    :ets.insert(:users, {hacker.member.user.id, updated_hacker})
     HackerStore.backup()
   end
 end
@@ -33,6 +33,8 @@ defmodule HackerStore do
   end
 
   defp wait_loop(n) do
+    if Enum.member?(:ets.all(), :users), do: :ets.delete(:users)
+
     if match?({:error, _}, :ets.file2tab(@file_location)) do
       if n == 0 do 
         IO.puts("Fellback to empty users table")
