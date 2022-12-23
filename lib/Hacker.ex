@@ -32,11 +32,23 @@ defmodule HackerStore do
     GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
   end
 
+  defp wait_loop(n) do
+    if match?({:error, _}, :ets.file2tab(@file_location)) do
+      if n == 0 do 
+        IO.puts("Fellback to empty users table")
+        :ets.new(:users, [:named_table, :public])
+      else
+        Process.sleep(1000)
+        wait_loop(n - 1)
+      end
+    else
+      IO.puts("Successfully loaded table")
+    end
+  end
+
   @impl true
   def init(:ok) do
-    if match?({:error, _}, :ets.file2tab(@file_location)) do
-      :ets.new(:users, [:named_table, :public])
-    end
+    wait_loop(10)
 
     :timer.send_interval(30 * 1000, :backup)
 

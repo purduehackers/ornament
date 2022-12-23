@@ -26,3 +26,5 @@ threadbot-*.tar
 /tmp/
 
 config/token.secret
+
+hackers.bin
