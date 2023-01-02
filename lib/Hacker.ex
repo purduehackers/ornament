@@ -3,6 +3,8 @@ defmodule Hacker do
   defstruct [:member, time_offset: 0, commits: (for i <- 1..10, do: {i, nil}, into: %{})]
 
   def find_by_member(member) do
+    if :ets.whereis(:users) == :undefined, do: HackerStore.wait_loop(5)
+    
     case :ets.lookup(:users, member.user.id) do
       [{_, hacker}] -> hacker
       _ -> %Hacker{member: member}
@@ -32,7 +34,7 @@ defmodule HackerStore do
     GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
   end
 
-  defp wait_loop(n) do
+  def wait_loop(n) do
     if Enum.member?(:ets.all(), :users), do: :ets.delete(:users)
 
     if match?({:error, _}, :ets.file2tab(@file_location)) do
